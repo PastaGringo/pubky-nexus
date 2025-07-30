@@ -1,0 +1,38 @@
+name: Build Pubky Nexus
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+      neo4j:
+        image: neo4j:latest
+        ports:
+          - 7474:7474
+          - 7687:7687
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Build release binaries
+        run: cargo build --release
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: nexus-binaries
+          path: target/release/*
